@@ -1,2 +1,2 @@
 # zotero-auslegal
-Zotero Web Scrapers for Australian Legal Databases
+Javascript web translators written for the open-source referencing program Zotero.
