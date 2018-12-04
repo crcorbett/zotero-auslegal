@@ -37,7 +37,7 @@
 
 function detectWeb(doc, url) {
  
-	if (url.indexOf("/document/onecase/") != -1) {
+	if (url.indexOf("/document/") != -1) {
 		return "case";
 	}
 }
@@ -47,23 +47,35 @@ function doWeb(doc, url) {
 	
 	var newItem = new Zotero.Item();
 	newItem.itemType = "case";
-	newItem.title = "placeholder"
+	newItem.title = doc.getElementsByClassName("query")[0].textContent
 
-	var pdf = doc.getElementsByClassName(""); // PDF element
-	var pdfURL = pdf[0].href; // URL
-	Z.debug(pdf[0].href); // Check URL
+	var dataID = doc.getElementsByClassName("downloadpdf injectednode btn tertiary notranslate")[0].attributes[3].textContent
+	var pdfURL = "https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?attachmentid=" + dataID + "&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false"
+	var baseURL = "https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?"
+	var postString = "attachmentid=" + dataID + "&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false"
 
-	if (pdf) {
-	var attachment = {
-	  url: pdf[0].href,
-	  mimeType: "application/pdf",
-	  title: "IEEE Computer Full Text PDF",
-	};
-	
-	newItem.attachments = attachment;
-	
+	// Z.debug("Title of Case: " + newItem.title)
+	// Z.debug(dataID)
+
+	// Z.debug(pdfURL); // Check URL
+
+
+	// PDF link is a HTTP Request to the URL:
+	// https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?attachmentid=V1,215,12609,5RXP-GYS1-FD4T-B0K0-00000-00-12609-350-alr-001,1&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false
+	// Where the attachmentid changes depending upon the case
+	// doGet is used to enable Zotero to use the login-cookie from accessing the main page
+
+	Zotero.Utilities.HTTP.doGet(pdfURL, function(html){
+		var attachment = {
+		  url: pdfURL,
+		  title: "Full Text PDF",
+		  mimeType: 'application/pdf'
+		};
+
+		newItem.attachments.push(attachment);
 	}
-	
+	)
+
 	newItem.complete();
 
 }
