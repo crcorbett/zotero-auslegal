@@ -58,26 +58,25 @@ function doWeb(doc, url) {
 	pdfButtonXPathClick[0].click();
 	//Z.debug(pdfButtonXPathClick[0])
 	var pdf = doc.getElementsByClassName("button-grey b-pdf");
-	var pdfURL = pdf[0].href;
-	Z.debug(pdf[0].href);
-	var pdfFile = Zotero.Attachments.importFromFile(pdf[0].href)
-	//pdf[0].click()
+	// var pdfURL = pdf[0].href;
+	// Z.debug(pdf[0].href);
+	pdf[0].click()
 
 	
 	//var element = doc.getElementsByClassName("button-grey b-pdf");
 	//var xpath = '//*[@id="gwt-debug-jade-main-tab-child-browse"]/div[4]/div[1]/div/div[2]/div[3]/div/div/div[2]/div[3]/a/@href'
 	//var pdfURL = ZU.xpath(doc, xpath);
 
-	if (pdf) {
-	var attachment = {
-	  url: pdf[0].href,
-	  mimeType: "application/pdf",
-	  title: "IEEE Computer Full Text PDF",
-	};
+	// if (pdf) {
+	// var attachment = {
+	//   url: pdf[0].href,
+	//   mimeType: "application/pdf",
+	//   title: "IEEE Computer Full Text PDF",
+	// };
 	
-	newItem.attachments = attachment;
+	// newItem.attachments = attachment;
 	
-	}
+	// }
 	
 	newItem.complete();
 

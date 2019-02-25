@@ -47,7 +47,7 @@ function doWeb(doc, url) {
 	
 	var newItem = new Zotero.Item();
 	newItem.itemType = "case";
-	newItem.title = doc.getElementsByClassName("query")[0].textContent
+	newItem.title = doc.getElementsByClassName("SS_RollupTitle")[0].textContent + " " + doc.getElementsByClassName("SS_ActiveRptr")[0].textContent
 
 	var dataID = doc.getElementsByClassName("downloadpdf injectednode btn tertiary notranslate")[0].attributes[3].textContent
 	var pdfURL = "https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?attachmentid=" + dataID + "&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false"
