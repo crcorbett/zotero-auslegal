@@ -44,39 +44,68 @@ function detectWeb(doc, url) {
 
 
 function doWeb(doc, url) {
-	
+
+	var toTitleCase = function (str) {
+		str = str.toLowerCase().split(' ');
+		for (var i = 0; i < str.length; i++) {
+			str[i] = str[i].charAt(0).toUpperCase() + str[i].slice(1);
+		}
+		str = str.join(' ');
+		str = str.replace('Of', 'of');
+		return str
+		};
+
+	var retrieveReporter = function(string){
+		var regEx = new RegExp(/[A-Z][a-z]+/gi);
+		var matches = string.match(regEx);
+		string = matches[0];
+		return string;
+	}
+
+	var retrieveYear = function(string){
+		var regEx = new RegExp(/\[[0-9]+\]|\([0-9]+\)/gi);
+		var matches = string.match(regEx);
+		var matches = matches[0].replace(/\W/g,'');
+		return matches;
+	}
+
 	var newItem = new Zotero.Item();
 	newItem.itemType = "case";
-	newItem.title = doc.getElementsByClassName("SS_RollupTitle")[0].textContent + " " + doc.getElementsByClassName("SS_ActiveRptr")[0].textContent
-	// newItem.reporter = 
+	newItem.title = doc.getElementsByClassName("SS_RollupTitle")[0].textContent;
 
-	var reported = doc.getElementsByClassName("SS_DocumentHeader")[0].childNodes[0].children[1].title;
-	if (reported == ""){reported = doc.getElementById("citationValueLabel").childNodes[1].title}
+	var caseName = doc.getElementsByClassName("SS_RollupTitle")[0].textContent;
+
+	// Retrieve Reporter acronym
+	newItem.reporter = retrieveReporter(doc.getElementsByClassName("SS_ActiveRptr")[0].textContent);
+
+	// Retrieve Court value
+	newItem.court = toTitleCase(doc.getElementsByClassName("SS_LeftAlign")[0].childNodes[3].textContent);
+
+	// Retrieve Year value
+	newItem.date = retrieveYear(doc.getElementsByClassName("SS_ActiveRptr")[0].textContent);
+
+	// Determine if the case is reported or unreported
+	var string = doc.getElementsByClassName("SS_ActiveRptr")[0].textContent;
+	if (string.includes("(")){
+		newItem.volume = string.match(/[0-9]+/g)[1];
+		newItem.pages = string.match(/[0-9]+/g)[2];
+	}
+	else {
+		newItem.pages = string.match(/[0-9]+/g)[1];
+	}
+
 	
-	newItem.reporter = reported
-
-	newItem.court = doc.getElementsByClassName("SS_LeftAlign")[0].childNodes[3].textContent
-
-	var dataID = doc.getElementsByClassName("downloadpdf injectednode btn tertiary notranslate")[0].attributes[3].textContent
+	var dataID = doc.getElementsByClassName("downloadpdf injectednode btn tertiary notranslate")[0].attributes[3].textContent;
 	var pdfURL = "https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?attachmentid=" + dataID + "&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false"
-	var baseURL = "https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?"
-	var postString = "attachmentid=" + dataID + "&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false"
 
-	// Z.debug("Title of Case: " + newItem.title)
-	// Z.debug(dataID)
-
-	// Z.debug(pdfURL); // Check URL
-
-
-	// PDF link is a HTTP Request to the URL:
-	// https://advance.lexis.com/r/documentprovider/5sd7k/attachment/data?attachmentid=V1,215,12609,5RXP-GYS1-FD4T-B0K0-00000-00-12609-350-alr-001,1&attachmenttype=PDF&attachmentname=OriginalSourceImage&origination=&sequencenumber=&ishotdoc=false
+	// PDF link is a HTTP Request to the URL
 	// Where the attachmentid changes depending upon the case
-	// doGet is used to enable Zotero to use the login-cookie from accessing the main page
+	// doGet is used to enable Zotero to use the login-cookie necessary for authentication
 
 	Zotero.Utilities.HTTP.doGet(pdfURL, function(html){
 		var attachment = {
 		  url: pdfURL,
-		  title: "Full Text PDF",
+		  title: caseName,
 		  mimeType: 'application/pdf'
 		};
 
