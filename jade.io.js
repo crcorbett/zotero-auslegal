@@ -38,46 +38,91 @@
 
 function detectWeb(doc, url) {
  
-	if (url.indexOf("/article") != -1) {
+	if (url.indexOf("https://jade.io/article") != -1) {
 		return "case";
-	} else if (url.indexOf("/maps") != -1) {
-		return "maps";
 	}
 }
 
 
 function doWeb(doc, url) {
 	
+
+	var retrieveReporter = function(string){
+		var regEx = new RegExp(/[A-Z][a-z]+/gi);
+		var matches = string.match(regEx);
+		string = matches[0];
+		return string;
+	}
+
+	var retrieveYear = function(string){
+		var regEx = new RegExp(/\[[0-9]+\]|\([0-9]+\)/gi);
+		var matches = string.match(regEx);
+		var matches = matches[0].replace(/\W/g,'');
+		return matches;
+	}
+
+	var removeYear = function(string){
+		var matches = string.match(/\[[0-9]+\]|\([0-9]+\)/);
+		string = string.replace(matches[0], "");
+		return string;
+	}
+
+	var retreiveShortTitle = function(string){
+		citationIndex = string.indexOf(string.match(/\[[0-9][0-9]+\]|\([0-9][0-9]+\)/)[0]);
+		return string.slice(0, citationIndex-1);
+	}
+
+	var splitCitations = function(string){
+		string = string.split("; ")
+		if (string.length > 1){
+			return string[1]
+		}
+		else {
+			return string[0]
+		}
+	}
+
+	function contains(selector, text) {
+  		var elements = document.querySelectorAll(selector);
+  		return Array.prototype.filter.call(elements, function(element){
+   			 return RegExp(text).test(element.textContent);
+		  });
+	}
+
 	var newItem = new Zotero.Item();
 	newItem.itemType = "case";
-	newItem.title = "placeholder"
 
-	var pdfButtonXPath = ('//*[@id="gwt-debug-jade-main-tab-child-browse"]/div[4]/div[1]/div/div[1]/div[5]');
-	var pdfButtonXPathClick = ZU.xpath(doc, pdfButtonXPath);
-	
-	pdfButtonXPathClick[0].click();
-	//Z.debug(pdfButtonXPathClick[0])
-	var pdf = doc.getElementsByClassName("button-grey b-pdf");
-	// var pdfURL = pdf[0].href;
-	// Z.debug(pdf[0].href);
-	pdf[0].click()
+	var docLink = contains('a', 'Download original document')[0].href
+	var fullCase = doc.getElementsByClassName("title no-underline-link")[0].getElementsByClassName("gwt-InlineLabel")[0].textContent;
+	var citation = doc.getElementsByClassName("gloss-body")[0].getElementsByClassName("gwt-InlineLabel")[0].textContent;
+	var shortCase = retreiveShortTitle(fullCase);
+	var citationNoYear = removeYear(citation);
+	var authCitation = splitCitations(citationNoYear);
 
-	
-	//var element = doc.getElementsByClassName("button-grey b-pdf");
-	//var xpath = '//*[@id="gwt-debug-jade-main-tab-child-browse"]/div[4]/div[1]/div/div[2]/div[3]/div/div/div[2]/div[3]/a/@href'
-	//var pdfURL = ZU.xpath(doc, xpath);
+	newItem.title = shortCase;
+	newItem.reporter = retrieveReporter(authCitation);
+	newItem.date = retrieveYear(citation);
 
-	// if (pdf) {
-	// var attachment = {
-	//   url: pdf[0].href,
-	//   mimeType: "application/pdf",
-	//   title: "IEEE Computer Full Text PDF",
-	// };
+	if (authCitation.match(/[0-9]+/gi).length > 1){
+		newItem.volume = authCitation.match(/[0-9]+/g)[0];
+		newItem.pages = authCitation.match(/[0-9]+/g)[1];
+	}	
+
+	else {
+		newItem.pages = authCitation.match(/[0-9]+/g)[0];
+	}
+
+	Zotero.Utilities.HTTP.doGet(docLink, function(html){
+		Z.debug(docLink)
+		var attachment = {
+	 		url: docLink,
+	  		title: shortCase,
+		};
+
+		newItem.attachments.push(attachment);})	
 	
-	// newItem.attachments = attachment;
-	
-	// }
-	
+
 	newItem.complete();
 
-}
+	}
+	
