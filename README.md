@@ -10,10 +10,12 @@ For more information on how to use this source code, see the [Zotero wiki](https
 # Databases
 Working:
 - Lexis Nexis Advance
+- Thomson Reuters Westlaw
 
 In Progress:
 - JADE.io
 
 Future:
-- WestLaw
+- AustLII
+- LawOne (TimeBase)
 
